@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante de Entrada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .qr-code {
+            margin-top: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generar Comprobante</h1>
+        <form id="generate-form">
+            <input type="text" id="name" placeholder="Nombre" required />
+            <input type="text" id="event" placeholder="Evento" required />
+            <button type="submit">Generar</button>
+        </form>
+        <div class="qr-code" id="qr-code"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('generate-form');
+        const qrCodeDiv = document.getElementById('qr-code');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const event = document.getElementById('event').value;
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, event })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    qrCodeDiv.innerHTML = `
+                        <p><strong>Nombre:</strong> ${data.name}</p>
+                        <p><strong>Evento:</strong> ${data.event}</p>
+                        <img src="${data.qrCode}" alt="QR Code" />
+                    `;
+                } else {
+                    qrCodeDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                qrCodeDiv.innerHTML = `<p style="color: red;">Error: No se pudo procesar la solicitud.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
